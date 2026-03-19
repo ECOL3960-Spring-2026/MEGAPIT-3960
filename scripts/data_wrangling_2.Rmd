@@ -108,7 +108,7 @@ beetle_richness_taxonID %>%
 
 
 Create column for month and year for beetle abundance. 
-```{r }
+```{r create column}
 beetle_abundance_monthly <- beetle_abundance_taxonID %>% 
   mutate(monthCollected = month(collectDate), 
          yearCollected = year(collectDate)) %>% 
@@ -120,7 +120,7 @@ beetle_abundance_monthly <- beetle_abundance_taxonID %>%
 Join beetle monthly abundance and litter average mass 
 
 **Note**: Currently no matching plotID between two datasets
-```{r}
+```{r join tables}
 
 abund_mass <- full_join(beetle_abundance_monthly, litter_avg_mass) 
 
