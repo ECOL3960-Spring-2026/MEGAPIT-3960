@@ -1,0 +1,173 @@
+---
+title: "Wrangling Beetle and Leaf Litter Data"
+author: "Zachary krausman, Eryn Lackey, Riley Wares, and Afia Lockett"
+date: "2026-03-24"
+output: html_document
+---
+
+Setup (do not change).
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load in (and install if needed) tidyverse and here packages. 
+```{r load packages, message = FALSE}
+
+#install.packages("tidyverse")
+#install.packages("here")
+
+library(tidyverse)
+library(here)
+
+```
+
+
+Read in all three csvs for the beetle data, litter chemistry data, and litter dry mass data.
+``` {r read data}
+
+beetles_raw <- read_csv(here("data", "raw", "bet_parataxonomistID.csv"))
+
+litter_carbonnitrogenraw <- read_csv(here("data", "raw", "ltr_litterCarbonNitrogen.csv"))
+
+litter_massraw <- read_csv(here("data", "raw", "ltr_massdata.csv"))
+
+```
+
+View all newly created raw data objects.
+
+``` {r view data}
+
+view(beetles_raw)
+view(litter_carbonnitrogenraw)
+view(litter_massraw)
+
+```
+
+Selected only necessary columns from the raw data sets. 
+``` {r collecting variables}
+
+beetles <- beetles_raw %>%
+  select(siteID, plotID, collectDate, taxonID, uid)
+
+littercn <- litter_carbonnitrogenraw %>%
+  select(siteID, plotID, collectDate, nitrogenPercent, carbonPercent, uid)
+
+littermass <- litter_massraw %>%
+  select(siteID, plotID, collectDate, dryMass, uid)
+
+```
+
+We collected data from multiple domain sites (D01, D02, and D07). As a note from NEON via DP1.10111.001 (Site management and event reporting), the data was "obfuscated to a higher taxonomic rank when the taxon was found to be listed as threatened, endangered, or sensitive at the state level where the observation was recorded". This was removed from data submitted for all sites except D01 and D20. We are using some sites from D01, but since many arthropods are not listed with protections, it is possible that some taxon levels are obfuscated, and some are not (i.e. some beetles maybe be listed at a higher taxonomic level instead of a genus or species resolution).
+
+View data sets to check for NAs.
+```{r view modified tables}
+
+view(littercn)
+view(littermass)
+
+```
+
+Removed NAs from the data sets to leave only "clean" data sets. 
+```{r remove na data}
+
+littercn_clean <- littercn %>%
+  filter(!is.na(carbonPercent),
+         !is.na(nitrogenPercent))
+
+littermass_clean <- littermass %>%
+  filter(!is.na(dryMass))
+
+beetle_clean <- beetles %>%
+  filter(!is.na(taxonID))
+
+view(littercnclean) 
+view(littermassclean) 
+view(beetleclean)
+
+```
+
+Creating a column for beetle abundance by counting the number of beetle observations 
+per species per day. 
+```{r count beetles}
+
+beetle_abundance_taxonID <- beetle_clean %>%
+  group_by(plotID, collectDate, taxonID) %>%
+  summarize(count = n())
+
+```
+Creating a column for beetle richness per month by counting the number of unique 
+beetle species per month. 
+```{r count taxa}
+
+beetle_richness_taxonID <- beetle_abundance_taxonID %>%
+  group_by(plotID, collectDate) %>%
+  summarize(richness = n())
+
+```
+
+A note: Only two decimal places are approved for this data. We shpuld treat anything less than 0.01 as 0.
+
+Created an average littermass dataset with columns for year, month and average littermass per month. 
+```{r average litter mass}
+
+litter_avg_mass <- littermass_clean %>%
+  mutate(monthCollected=month(collectDate), yearCollected=year(collectDate)) %>%
+  group_by(plotID, yearCollected, monthCollected) %>%
+  summarize(avgmass = mean(dryMass))
+
+```
+
+Created an average carbon and nitrogen dataset with columns for year, month and average nitrogen and carbon percents per month. 
+```{r average c and n}
+
+litter_avg_cn <- littercn_clean %>%
+  mutate(monthCollected=month(collectDate), yearCollected=year(collectDate)) %>%
+  group_by(plotID, yearCollected, monthCollected) %>%
+  summarize(avgCpercent = mean(carbonPercent), avgNpercent = mean(nitrogenPercent))
+
+```
+
+Combined the average littermass and average nitrogen and carbon datasets to have one
+litter data sets with all averages. 
+```{r full join litter data}
+
+litter_averages_total <- litter_avg_mass %>%
+  full_join(litter_avg_cn)
+
+```
+
+Create column for month and year for beetle abundance. 
+```{r create column}
+beetle_abundance_monthly <- beetle_abundance_taxonID %>% 
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>% 
+  ungroup() %>% 
+  select(plotID, taxonID:yearCollected)
+
+```
+
+Join beetle monthly abundance and litter average mass 
+
+**Note**: Currently no matching plotID between two datasets
+```{r join tables}
+
+abund_mass <- full_join(beetle_abundance_monthly, litter_avg_mass) 
+
+head(abund_mass)
+
+```
+
+Export datasets to csvs. 
+```{r export data}
+
+litter_averages_total %>%
+  write_csv(here("data", "processed", "litter_averages_total.csv"))
+
+beetle_abundance_taxonID %>%
+  write_csv(here("data", "processed", "beetle_abundance_taxonID.csv"))
+
+beetle_richness_taxonID %>%
+  write_csv(here("data", "processed", "beetle_richness_taxonID.csv"))
+
+```
+
