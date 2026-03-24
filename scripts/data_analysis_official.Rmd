@@ -86,10 +86,16 @@ BL_beetle_litter_joined_table_clean <- beetle_litter_joined_table %>%
 Scatterplot of beetle richness and average leaf litter mass. 
 ```{r make a graph}
 
-ggplot(BL_beetle_litter_joined_table_clean, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth)) +
+ggplot(BL_beetle_litter_joined_table_clean, 
+       aes(x=avg_mass_plotmonth, 
+           y=avg_richness_plotmonth)) +
+  labs(x= "Average Leaf Litter Mass per Month (g)",
+       y= "Average Beetle Richness per Month") + 
   geom_point(dotsize=0.5)
 
 ```
+Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) (Add descriptive stastics here).
+
 Exploratory graphing data based on site. 
 ```{r graph by site}
 beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data=beetle_litter) 
