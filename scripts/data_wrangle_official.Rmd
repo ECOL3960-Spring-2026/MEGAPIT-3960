@@ -160,14 +160,14 @@ head(abund_mass)
 Export datasets to csvs. 
 ```{r export data}
 
-#litter_averages_total %>%
-#  write_csv(here("data", "processed", "litter_averages_total.csv"))
+litter_averages_total %>%
+  write_csv(here("data", "processed", "litter_averages_total.csv"))
 
-#beetle_abundance_taxonID %>%
- # write_csv(here("data", "processed", "beetle_abundance_taxonID.csv"))
+beetle_abundance_taxonID %>%
+  write_csv(here("data", "processed", "beetle_abundance_taxonID.csv"))
 
-#beetle_richness_taxonID %>%
- # write_csv(here("data", "processed", "beetle_richness_taxonID.csv"))
+beetle_richness_taxonID %>%
+  write_csv(here("data", "processed", "beetle_richness_taxonID.csv"))
 
 ```
 
