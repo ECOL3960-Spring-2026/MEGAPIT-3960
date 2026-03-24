@@ -1,0 +1,114 @@
+---
+title: "Data Anaysis of Beetle Richness and Leaf Litter"
+author: "Zachary krausman, Eryn Lackey, Riley Wares, and Afia Lockett"
+date: "2026-03-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load in Packages
+```{r load packages}
+
+#install.packages("pacman")
+library(pacman)
+
+pacman::p_load(tidyverse, here, cowplot)
+
+```
+
+Import datasets
+```{r import datasets}
+
+litter_averages_total <- read.csv(here("data", "processed", "litter_averages_total.csv"))
+beetle_abundance_taxonID <- read.csv(here("data", "processed", "beetle_abundance_taxonID.csv"))
+beetle_richness_taxonID <- read.csv(here("data", "processed", "beetle_richness_taxonID.csv"))
+
+```
+
+Looking at count of observations per month. 
+```{r check monthliness}
+
+ggplot(data=litter_averages_total, aes(x=monthCollected))+
+  geom_dotplot(dotsize = 0.025)
+
+ggplot(data=beetle_richness_taxonID, aes(x=month(collectDate)))+
+  geom_dotplot(dotsize = 0.025)
+
+```
+
+A note to future explorers: We do not have data for the winter (or between march and october). We are choosing to focus on the rough growing season (april to october)
+
+For discussion: it would be interesting to see what is visible in the winter, but requires more data.
+
+Create average richness with the beetle data. 
+```{r create average richness}
+beetle_richness_monthly <- beetle_richness_taxonID %>% 
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(plotID, yearCollected, monthCollected) %>%
+  summarize(avg_richness_monthly = mean(richness))
+
+```
+
+Preparing beetle and litter data for joining including creating means. 
+```{r prelim join tables}
+  beetle_richness_by_site_month <- beetle_richness_monthly %>%
+  mutate(siteID = substring(plotID,0,4)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_richness_plotmonth = mean(avg_richness_monthly))
+
+  litter_mass_by_site_month <- litter_averages_total %>%
+  mutate(siteID = substring(plotID,0,4)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_mass_plotmonth = mean(avgmass), avg_C_plotmonth = mean(avgCpercent), avg_N_plotmonth = mean(avgNpercent))
+  
+```
+
+Joining litter and beetle data!
+```{r}
+
+  beetle_litter_joined_table <- beetle_richness_by_site_month %>%
+    full_join(litter_mass_by_site_month) %>%
+    drop_na("avg_richness_plotmonth","avg_mass_plotmonth")
+
+```
+
+Dropping C and N because of no overlap with beetle data
+```{r drop CN}
+BL_beetle_litter_joined_table_clean <- beetle_litter_joined_table %>%
+  select(siteID, yearCollected, monthCollected, avg_richness_plotmonth, avg_mass_plotmonth)
+
+```
+
+Scatterplot of beetle richness and average leaf litter mass. 
+```{r make a graph}
+
+ggplot(BL_beetle_litter_joined_table_clean, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth)) +
+  geom_point(dotsize=0.5)
+
+```
+Exploratory graphing data based on site. 
+```{r graph by site}
+beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data=beetle_litter) 
+beetle_litter_model <- aov(avg_richness_plotmonth ~ (avg_mass_plotmonth) * siteID, data=beetle_litter) 
+summary(beetle_litter_model)
+summary(beetle_litter_model2)
+plot(beetle_litter_model, which=1:3)
+
+ggplot(beetle_litter_model, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth, color=siteID)) +
+  geom_point(dotsize=0.5) +
+  geom_smooth(method="lm")
+
+em <- emmeans(beetle_litter_model, ~siteID)
+tukey_beetle_litter <- contrast(em, method="pairwise", adjust="Tukey")
+summary(tukey_beetle_litter, infer=TRUE, level=0.95)
+```
+
+Export joined beetle richness and average leaf litter data. 
+```{r send it out}
+BL_beetle_litter_joined_table_clean %>%
+   write_csv(here("data", "processed", "beetle_litter_joined_table"))
+```
