@@ -29,13 +29,15 @@ beetle_richness_taxonID <- read.csv(here("data", "processed", "beetle_richness_t
 
 ```
 
-Looking at count of observations per month. 
+Preliminary visuals of beetle and litter observations per month. 
 ```{r check monthliness}
 
-ggplot(data=litter_averages_total, aes(x=monthCollected))+
+ggplot(data=litter_averages_total, 
+       aes(x=monthCollected))+
   geom_dotplot(dotsize = 0.025)
 
-ggplot(data=beetle_richness_taxonID, aes(x=month(collectDate)))+
+ggplot(data=beetle_richness_taxonID, 
+       aes(x=month(collectDate)))+
   geom_dotplot(dotsize = 0.025)
 
 ```
@@ -77,13 +79,12 @@ Joining litter and beetle data!
 
 ```
 
-Dropping C and N because of no overlap with beetle data
+Dropping Carbon and Nitrogen due to no overlap with beetle data
 ```{r drop CN}
 beetle_litter_joined_table_clean <- beetle_litter_joined_table %>%
   select(siteID, yearCollected, monthCollected, avg_richness_plotmonth, avg_mass_plotmonth)
 
 ```
-
 
 Linear Model for beetle richness and average leaf litter mass.
 ```{r}
@@ -93,7 +94,17 @@ beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= 
 summary(beetle_litter_model2)
 
 ```
-Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the p-value much greater than 0.05 (F(1, 137)=.9278, p=.337).
+
+Checking assumptions for a linear model. 
+```{r}
+par(mfrow = c(1, 3))
+
+plot(beetle_litter_model2, which = 1:3)
+
+shapiro.test(beetle_litter_model2$residuals)
+``` 
+
+Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the linear regression model's p-value much greater than 0.05 (F(1, 137)=.9278, p=.337). A linear regression model was used as both average leaf litter mass per month and average beetle richness per month are continuous variables. However, the linear regression model did not met the required assumptions of normality due to its low p-value of less than .05 produced by the Shapiro test and the strong concentration of points on the right side of the residuals v fitted and scale location plots. However, this lack of leaf litter mass as a predictor of beetle richness leds us to wonder whether leaf litter may still be a predictor for beetle abundance. 
 
 Scatterplot of beetle richness and average leaf litter mass. 
 ```{r make a graph}
@@ -103,12 +114,12 @@ ggplot(beetle_litter_joined_table_clean,
            y=avg_richness_plotmonth)) +
   labs(x= "Average Leaf Litter Mass per Month (g)",
        y= "Average Beetle Richness per Month") + 
-  geom_point(dotsize=0.5)
+  geom_point(size=0.5)
 
 ```
 Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) (F(1, 137)=.9278, p=.337).
 
-Exploratory graphing and anaylsis data based on site. 
+Exploratory anova anaylsis data based on site. 
 ```{r graph by site}
 
 beetle_litter_model <- aov(avg_richness_plotmonth ~ (avg_mass_plotmonth) * siteID, data=beetle_litter_joined_table_clean) 
@@ -116,10 +127,21 @@ summary(beetle_litter_model)
 summary(beetle_litter_model2)
 plot(beetle_litter_model, which=1:3)
 
-ggplot(beetle_litter_model, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth, color=siteID)) +
-  geom_point(dotsize=0.5) +
-  geom_smooth(method="lm")
+```
 
+Visual of anova model produced.
+```{r}
+ggplot(beetle_litter_model, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth, color=siteID)) +
+  geom_point(size=2.0) +
+  labs(x="Average Leaf Litter Mass per Month (g)",
+       y="Average Beetle Richness per Month",
+       col="Site ID") +
+  geom_smooth(method="lm")
+```
+Figure 2. Scatterplot visualizing the relationship between average leaf litter mass per month and average beetle richness per month based on site. 
+
+Exploratory chunk using emmeans model plugin
+```{r}
 # This is another type of linear model using this plugin
 em_beetle_model <- emmeans(beetle_litter_model, ~siteID)
 tukey_beetle_litter <- contrast(em_beetle_model, method="pairwise", adjust="Tukey")
