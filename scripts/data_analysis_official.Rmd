@@ -139,6 +139,7 @@ plot(beetle_litter_aov, which = 1:3)
 Visual of anova model produced.
 ```{r}
 
+# Not sure why this plot is using the fitted model as the data source?
 ggplot(beetle_litter_aov, 
        aes(x = avg_mass_plotmonth, 
            y = avg_richness_plotmonth, 
