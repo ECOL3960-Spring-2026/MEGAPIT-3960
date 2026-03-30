@@ -105,7 +105,7 @@ beetle_richness_taxonID <- beetle_abundance_taxonID %>%
 
 ```
 
-A note: Only two decimal places are approved for this data. We shpuld treat anything less than 0.01 as 0.
+A note: Only two decimal places are approved for this data. We should treat anything less than 0.01 as 0.
 
 Created an average littermass dataset with columns for year, month and average littermass per month. 
 ```{r average litter mass}
