@@ -126,7 +126,7 @@ Figure 1. Average beetle richness per month as a function of the average leaf li
 Exploratory anova analysis data based on site. 
 ```{r graph by site}
 
-# aov() for factor/categorical predictors
+# aov() should be for factor/categorical predictors: testing whether means different among groups
 beetle_litter_aov <- aov(avg_richness_plotmonth ~ avg_mass_plotmonth * siteID, data = beetle_litter_joined_table) 
 
 summary(beetle_litter_aov)
@@ -157,10 +157,12 @@ ggplot(beetle_litter_aov,
 Figure 2. Scatterplot visualizing the relationship between average leaf litter mass per month and average beetle richness per month based on site. 
 
 Exploratory chunk using emmeans model plugin
+
+KF: Running emmeans() command below gives output: "NOTE: Results may be misleading due to involvement in interactions". As mentioned above, probably don't want to include the interaction and stick to categorical variable in your aov(). Can also use TukeyHSD() frmn base R if not trying to compare adjusted means 
 ```{r}
 
 # This is another type of linear model using this plugin
-em_beetle_model <- emmeans(beetle_litter_model, ~siteID)
+em_beetle_model <- emmeans(beetle_litter_aov, ~ siteID)
 tukey_beetle_litter <- contrast(em_beetle_model, method = "pairwise", adjust = "Tukey")
 summary(tukey_beetle_litter, infer = TRUE, level = 0.95)
 
