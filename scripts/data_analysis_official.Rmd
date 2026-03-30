@@ -20,7 +20,7 @@ pacman::p_load(tidyverse, here, cowplot, emmeans)
 
 ```
 
-Import datasets
+Import datasets from the accompanying "data_wrangle_official.Rmd" file
 ```{r import datasets}
 
 litter_averages_total <- read.csv(here("data", "processed", "litter_averages_total.csv"))
@@ -32,10 +32,10 @@ beetle_richness_taxonID <- read.csv(here("data", "processed", "beetle_richness_t
 Looking at count of observations per month. 
 ```{r check monthliness}
 
-ggplot(data=litter_averages_total, aes(x=monthCollected))+
+ggplot(data = litter_averages_total, aes(x=monthCollected)) +
   geom_dotplot(dotsize = 0.025)
 
-ggplot(data=beetle_richness_taxonID, aes(x=month(collectDate)))+
+ggplot(data = beetle_richness_taxonID, aes(x=month(collectDate))) +
   geom_dotplot(dotsize = 0.025)
 
 ```
@@ -93,20 +93,20 @@ beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= 
 summary(beetle_litter_model2)
 
 ```
-Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the p-value much greater than 0.05 (F(1, 137)=.9278, p=.337).
+Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the p-value much greater than 0.05 **(F(1, 137) = 0.9278, p = 0.337)**.
 
 Scatterplot of beetle richness and average leaf litter mass. 
 ```{r make a graph}
 
 ggplot(beetle_litter_joined_table_clean, 
-       aes(x=avg_mass_plotmonth, 
-           y=avg_richness_plotmonth)) +
-  labs(x= "Average Leaf Litter Mass per Month (g)",
-       y= "Average Beetle Richness per Month") + 
+       aes(x = avg_mass_plotmonth, 
+           y = avg_richness_plotmonth)) +
+  labs(x = "Average Leaf Litter Mass per Month (g)",
+       y = "Average Beetle Richness per Month") + 
   geom_point(dotsize=0.5)
 
 ```
-Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) (F(1, 137)=.9278, p=.337).
+Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) **(F(1, 137) = 0.9278, p = 0.337)**.
 
 Exploratory graphing and anaylsis data based on site. 
 ```{r graph by site}
@@ -114,16 +114,16 @@ Exploratory graphing and anaylsis data based on site.
 beetle_litter_model <- aov(avg_richness_plotmonth ~ (avg_mass_plotmonth) * siteID, data=beetle_litter_joined_table_clean) 
 summary(beetle_litter_model)
 summary(beetle_litter_model2)
-plot(beetle_litter_model, which=1:3)
+plot(beetle_litter_model, which = 1:3)
 
-ggplot(beetle_litter_model, aes(x=avg_mass_plotmonth, y=avg_richness_plotmonth, color=siteID)) +
-  geom_point(dotsize=0.5) +
-  geom_smooth(method="lm")
+ggplot(beetle_litter_model, aes(x = avg_mass_plotmonth, y = avg_richness_plotmonth, color = siteID)) +
+  geom_point(dotsize = 0.5) +
+  geom_smooth(method = "lm")
 
 # This is another type of linear model using this plugin
 em_beetle_model <- emmeans(beetle_litter_model, ~siteID)
-tukey_beetle_litter <- contrast(em_beetle_model, method="pairwise", adjust="Tukey")
-summary(tukey_beetle_litter, infer=TRUE, level=0.95)
+tukey_beetle_litter <- contrast(em_beetle_model, method = "pairwise", adjust = "Tukey")
+summary(tukey_beetle_litter, infer = TRUE, level = 0.95)
 ```
 
 Export joined beetle richness and average leaf litter data. 
