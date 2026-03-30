@@ -85,12 +85,12 @@ beetle_litter_joined_table <- beetle_richness_by_site_month %>%
 
 ```
 
-Linear Model for beetle richness and average leaf litter mass.
+Linear Model for beetle richness as a function of average leaf litter mass.
 ```{r}
 
-beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table) 
+beetle_litter_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table) 
 
-summary(beetle_litter_model2)
+summary(beetle_litter_lm)
 
 ```
 
@@ -98,9 +98,9 @@ Checking assumptions for a linear model.
 ```{r}
 par(mfrow = c(1, 3))
 
-plot(beetle_litter_model2, which = 1:3)
+plot(beetle_litter_lm, which = 1:3)
 
-shapiro.test(beetle_litter_model2$residuals)
+shapiro.test(beetle_litter_lm$residuals)
 ``` 
 
 Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the linear regression model's p-value much greater than 0.05 (F(1, 137)=.9278, p=.337). A linear regression model was used as both average leaf litter mass per month and average beetle richness per month are continuous variables. However, the linear regression model did not met the required assumptions of normality due to its low p-value of less than .05 produced by the Shapiro test and the strong concentration of points on the right side of the residuals v fitted and scale location plots. However, this lack of leaf litter mass as a predictor of beetle richness leds us to wonder whether leaf litter may still be a predictor for beetle abundance. 
@@ -121,14 +121,16 @@ ggplot(beetle_litter_joined_table,
 ```
 Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) **(F(1, 137) = 0.9278, p = 0.337)**.
 
-Exploratory anova anaylsis data based on site. 
+Exploratory anova analysis data based on site. 
 ```{r graph by site}
 
-beetle_litter_model <- aov(avg_richness_plotmonth ~ avg_mass_plotmonth * siteID, data = beetle_litter_joined_table) 
-summary(beetle_litter_model)
-summary(beetle_litter_model2)
-plot(beetle_litter_model, which = 1:3)
+# aov() for factor/categorical predictors
+beetle_litter_aov <- aov(avg_richness_plotmonth ~ avg_mass_plotmonth * siteID, data = beetle_litter_joined_table) 
 
+summary(beetle_litter_aov)
+
+plot(beetle_litter_aov, which = 1:3)
+# Quantitative tests for normality, homogeneity among groups? 
 
 ```
 
