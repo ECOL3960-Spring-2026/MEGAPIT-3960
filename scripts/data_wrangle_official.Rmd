@@ -111,7 +111,8 @@ Created an average littermass dataset with columns for year, month and average l
 ```{r average litter mass}
 
 litter_avg_mass <- littermass_clean %>%
-  mutate(monthCollected=month(collectDate), yearCollected=year(collectDate)) %>%
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
   group_by(plotID, yearCollected, monthCollected) %>%
   summarize(avgmass = mean(dryMass))
 
@@ -121,9 +122,11 @@ Created an average carbon and nitrogen dataset with columns for year, month and 
 ```{r average c and n}
 
 litter_avg_cn <- littercn_clean %>%
-  mutate(monthCollected=month(collectDate), yearCollected=year(collectDate)) %>%
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
   group_by(plotID, yearCollected, monthCollected) %>%
-  summarize(avgCpercent = mean(carbonPercent), avgNpercent = mean(nitrogenPercent))
+  summarize(avgCpercent = mean(carbonPercent), 
+            avgNpercent = mean(nitrogenPercent))
 
 ```
 
