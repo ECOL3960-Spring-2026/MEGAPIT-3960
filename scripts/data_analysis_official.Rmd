@@ -32,13 +32,12 @@ beetle_richness_taxonID <- read.csv(here("data", "processed", "beetle_richness_t
 Preliminary visuals of beetle and litter observations per month. 
 ```{r check monthliness}
 
-
-ggplot(data=litter_averages_total, 
-       aes(x=monthCollected))+
+ggplot(data = litter_averages_total, 
+       aes(x = monthCollected))+
   geom_dotplot(dotsize = 0.025)
 
-ggplot(data=beetle_richness_taxonID, 
-       aes(x=month(collectDate)))+
+ggplot(data = beetle_richness_taxonID, 
+       aes(x = month(collectDate)))+
   geom_dotplot(dotsize = 0.025)
 
 ```
@@ -49,6 +48,7 @@ For discussion: it would be interesting to see what is visible in the winter, bu
 
 Create average richness with the beetle data. 
 ```{r create average richness}
+
 beetle_richness_monthly <- beetle_richness_taxonID %>% 
   mutate(monthCollected = month(collectDate), 
          yearCollected = year(collectDate)) %>%
@@ -59,15 +59,18 @@ beetle_richness_monthly <- beetle_richness_taxonID %>%
 
 Preparing beetle and litter data for joining including creating means. 
 ```{r prelim join tables}
-  beetle_richness_by_site_month <- beetle_richness_monthly %>%
-  mutate(siteID = substring(plotID,0,4)) %>%
+
+beetle_richness_by_site_month <- beetle_richness_monthly %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
   group_by(siteID, yearCollected, monthCollected) %>%
   summarize(avg_richness_plotmonth = mean(avg_richness_monthly))
 
-  litter_mass_by_site_month <- litter_averages_total %>%
-  mutate(siteID = substring(plotID,0,4)) %>%
+litter_mass_by_site_month <- litter_averages_total %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
   group_by(siteID, yearCollected, monthCollected) %>%
-  summarize(avg_mass_plotmonth = mean(avgmass), avg_C_plotmonth = mean(avgCpercent), avg_N_plotmonth = mean(avgNpercent))
+  summarize(avg_mass_plotmonth = mean(avgmass), 
+            avg_C_plotmonth = mean(avgCpercent),
+            avg_N_plotmonth = mean(avgNpercent))
   
 ```
 
