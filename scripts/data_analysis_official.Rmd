@@ -75,17 +75,12 @@ litter_mass_by_site_month <- litter_averages_total %>%
 ```
 
 Joining litter and beetle data!
+Dropping Carbon and Nitrogen due to no overlap with beetle data
 ```{r}
 
-  beetle_litter_joined_table <- beetle_richness_by_site_month %>%
-    full_join(litter_mass_by_site_month) %>%
-    drop_na("avg_richness_plotmonth","avg_mass_plotmonth")
-
-```
-
-Dropping Carbon and Nitrogen due to no overlap with beetle data
-```{r drop CN}
-beetle_litter_joined_table_clean <- beetle_litter_joined_table %>%
+beetle_litter_joined_table <- beetle_richness_by_site_month %>%
+  full_join(litter_mass_by_site_month) %>%
+  drop_na("avg_richness_plotmonth","avg_mass_plotmonth") %>%
   select(siteID, yearCollected, monthCollected, avg_richness_plotmonth, avg_mass_plotmonth)
 
 ```
@@ -93,7 +88,7 @@ beetle_litter_joined_table_clean <- beetle_litter_joined_table %>%
 Linear Model for beetle richness and average leaf litter mass.
 ```{r}
 
-beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table_clean) 
+beetle_litter_model2 <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table) 
 
 summary(beetle_litter_model2)
 
@@ -116,7 +111,7 @@ Average leaf litter mass per month was not a significant predictor of average be
 Scatterplot of beetle richness and average leaf litter mass. 
 ```{r make a graph}
 
-ggplot(beetle_litter_joined_table_clean, 
+ggplot(beetle_litter_joined_table, 
        aes(x=avg_mass_plotmonth, 
            y=avg_richness_plotmonth)) +
   labs(x= "Average Leaf Litter Mass per Month (g)",
@@ -129,7 +124,7 @@ Figure 1. Average beetle richness per month as a function of the average leaf li
 Exploratory anova anaylsis data based on site. 
 ```{r graph by site}
 
-beetle_litter_model <- aov(avg_richness_plotmonth ~ (avg_mass_plotmonth) * siteID, data=beetle_litter_joined_table_clean) 
+beetle_litter_model <- aov(avg_richness_plotmonth ~ avg_mass_plotmonth * siteID, data = beetle_litter_joined_table) 
 summary(beetle_litter_model)
 summary(beetle_litter_model2)
 plot(beetle_litter_model, which = 1:3)
@@ -158,6 +153,6 @@ summary(tukey_beetle_litter, infer = TRUE, level = 0.95)
 
 Export joined beetle richness and average leaf litter data. 
 ```{r send it out}
-beetle_litter_joined_table_clean %>%
+beetle_litter_joined_table %>%
    write_csv(here("data", "processed", "beetle_litter_joined_table"))
 ```
