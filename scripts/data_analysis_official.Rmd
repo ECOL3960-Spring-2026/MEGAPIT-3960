@@ -90,7 +90,10 @@ Linear Model for beetle richness as a function of average leaf litter mass.
 
 beetle_litter_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table) 
 
+beetle_litter_lm_lin1 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth), data= beetle_litter_joined_table) 
+
 summary(beetle_litter_lm)
+summary(beetle_litter_lm_lin1)
 
 ```
 
@@ -99,6 +102,7 @@ Checking assumptions for a linear model.
 par(mfrow = c(1, 3))
 
 plot(beetle_litter_lm, which = 1:3)
+plot(beetle_litter_lm_lin1, which = 1:3)
 
 shapiro.test(beetle_litter_lm$residuals)
 ``` 
