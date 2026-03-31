@@ -1,0 +1,237 @@
+---
+title: "Data Anaysis of Beetle Richness and Leaf Litter"
+author: "Zachary krausman, Eryn Lackey, Riley Wares, and Afia Lockett"
+date: "2026-03-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load in Packages
+```{r load packages}
+
+#install.packages("pacman")
+library(pacman)
+
+# Load packages (emmeans used for statistical tests)
+pacman::p_load(tidyverse, here, cowplot, emmeans)
+
+```
+
+Import datasets from the accompanying "data_wrangle_official.Rmd" file
+```{r import datasets}
+
+litter_averages_total <- read.csv(here("data", "processed", "litter_averages_total.csv"))
+beetle_abundance_taxonID <- read.csv(here("data", "processed", "beetle_abundance_taxonID.csv"))
+beetle_richness_taxonID <- read.csv(here("data", "processed", "beetle_richness_taxonID.csv"))
+
+```
+
+Preliminary visuals of beetle and litter observations per month. 
+```{r check monthliness}
+
+ggplot(data = litter_averages_total, 
+       aes(x = monthCollected))+
+  geom_dotplot(dotsize = 0.025)
+
+ggplot(data = beetle_richness_taxonID, 
+       aes(x = month(collectDate)))+
+  geom_dotplot(dotsize = 0.025)
+
+```
+
+A note to future explorers: We do not have data for the winter (or between march and october). We are choosing to focus on the rough growing season (april to october)
+
+For discussion: it would be interesting to see what is visible in the winter, but requires more data.
+
+Create average richness with the beetle data. 
+```{r create average richness}
+
+beetle_richness_monthly <- beetle_richness_taxonID %>% 
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(plotID, yearCollected, monthCollected) %>%
+  summarize(avg_richness_monthly = mean(richness))
+
+```
+
+Preparing beetle and litter data for joining including creating means. 
+```{r prelim join tables}
+
+beetle_richness_by_site_month <- beetle_richness_monthly %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_richness_plotmonth = mean(avg_richness_monthly))
+
+litter_mass_by_site_month <- litter_averages_total %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_mass_plotmonth = mean(avgmass), 
+            avg_C_plotmonth = mean(avgCpercent),
+            avg_N_plotmonth = mean(avgNpercent))
+  
+```
+
+Joining litter and beetle data!
+Dropping Carbon and Nitrogen due to no overlap with beetle data
+```{r}
+
+beetle_litter_joined_table <- beetle_richness_by_site_month %>%
+  full_join(litter_mass_by_site_month) %>%
+  drop_na("avg_richness_plotmonth","avg_mass_plotmonth") %>%
+  select(siteID, yearCollected, monthCollected, avg_richness_plotmonth, avg_mass_plotmonth)
+
+```
+
+Linear Model for beetle richness as a function of average leaf litter mass.
+```{r}
+
+beetle_litter_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= beetle_litter_joined_table) 
+
+beetle_litter_lm_lin1 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth), data= beetle_litter_joined_table) 
+
+summary(beetle_litter_lm)
+summary(beetle_litter_lm_lin1)
+
+BART_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "BART")
+BART_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= BART_BL)
+summary(BART_lm)
+
+GRSM_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "GRSM")
+GRSM_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= GRSM_BL)
+summary(GRSM_lm)
+
+HARV_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "HARV")
+HARV_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= HARV_BL)
+summary(HARV_lm)
+
+MLBS_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "MLBS")
+MLBS_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= MLBS_BL)
+summary(MLBS_lm)
+
+ORNL_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "ORNL")
+ORNL_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= ORNL_BL)
+summary(ORNL_lm)
+
+SCBI_BL <- beetle_litter_joined_table  %>% 
+  filter(siteID == "SCBI")
+SCBI_lm <- lm(avg_richness_plotmonth ~ (avg_mass_plotmonth), data= SCBI_BL)
+summary(SCBI_lm)
+
+beetle_litter_lm_lin2 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth) * siteID, data= beetle_litter_joined_table) 
+
+summary(beetle_litter_lm)
+summary(beetle_litter_lm_lin2)
+```
+
+Checking assumptions for a linear model. 
+```{r}
+par(mfrow = c(1, 3))
+
+plot(beetle_litter_lm, which = 1:3)
+plot(beetle_litter_lm_lin1, which = 1:3)
+
+shapiro.test(beetle_litter_lm_lin1$residuals)
+shapiro.test(beetle_litter_lm$residuals)
+shapiro.test(beetle_litter_lm_lin2$residuals)
+``` 
+
+Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the linear regression model's p-value much greater than 0.05 (F(1, 137)=.9278, p=.337). A linear regression model was used as both average leaf litter mass per month and average beetle richness per month are continuous variables. However, the linear regression model did not met the required assumptions of normality due to its low p-value of less than .05 produced by the Shapiro test and the strong concentration of points on the right side of the residuals v fitted and scale location plots. However, this lack of leaf litter mass as a predictor of beetle richness leds us to wonder whether leaf litter may still be a predictor for beetle abundance. 
+
+Average leaf litter mass per month was not a significant predictor of average beetle richness per month as seen by the p-value much greater than 0.05 **(F(1, 137) = 0.9278, p = 0.337)**.
+
+
+Scatterplot of beetle richness and average leaf litter mass. 
+```{r make a graph}
+
+ggplot(beetle_litter_joined_table, 
+       aes(x = avg_mass_plotmonth, 
+           y = avg_richness_plotmonth,
+           color = siteID)) +
+  labs(x = "Average Leaf Litter Mass per Month (g)",
+       y = "Average Beetle Richness per Month") + 
+  geom_point(size = 1) +
+  theme_bw()
+
+```
+Figure 1. Average beetle richness per month as a function of the average leaf litter mass per month (g). There was no significant relationship between average beetle richness per month and average leaf litter mass per month (g) **(F(1, 137) = 0.9278, p = 0.337)**.
+
+Exploratory anova analysis data based on site. 
+```{r graph by site}
+
+# aov() should be for factor/categorical predictors: testing whether means different among groups
+beetle_litter_aov <- aov(avg_richness_plotmonth ~ avg_mass_plotmonth * siteID, data = beetle_litter_joined_table) 
+
+summary(beetle_litter_aov)
+
+plot(beetle_litter_aov, which = 1:3)
+# Quantitative tests for normality, homogeneity among groups? 
+
+```
+
+Visual of anova model produced.
+```{r}
+
+# Not sure why this plot is using the fitted model as the data source?
+ggplot(beetle_litter_joined_table, 
+       aes(x = avg_mass_plotmonth, 
+           y = avg_richness_plotmonth, 
+           color = siteID)) +
+  geom_point(size=2.0) +
+  labs(x = "Average Leaf Litter Mass per Month (g)",
+       y = "Average Beetle Richness per Month",
+       col = "Site ID") +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+ggplot(beetle_litter_joined_table, 
+       aes(x = log(avg_mass_plotmonth), 
+           y = avg_richness_plotmonth, 
+           color = siteID)) +
+  geom_point(size=2.0) +
+  labs(x = "Average Leaf Litter Mass per Month (g)",
+       y = "Average Beetle Richness per Month",
+       col = "Site ID") +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+
+## Remember you typically only include a trendline for statistically significant relationships
+
+```
+Figure 2. Scatterplot visualizing the relationship between average leaf litter mass per month and average beetle richness per month based on site. 
+
+Exploratory chunk using emmeans model plugin
+
+KF: Running emmeans() command below gives output: "NOTE: Results may be misleading due to involvement in interactions". As mentioned above, probably don't want to include the interaction and stick to categorical variable in your aov(). Can also use TukeyHSD() frmn base R if not trying to compare adjusted means 
+```{r}
+
+# This is another type of linear model using this plugin
+em_beetle_model <- emmeans(beetle_litter_aov, ~ siteID)
+tukey_beetle_litter <- contrast(em_beetle_model, method = "pairwise", adjust = "Tukey")
+summary(tukey_beetle_litter, infer = TRUE, level = 0.95)
+
+```
+
+
+```
+
+```
+
+Export joined beetle richness and average leaf litter data. 
+```{r send it out}
+
+beetle_litter_joined_table %>%
+   write_csv(here("data", "processed", "beetle_litter_joined_table"))
+
+```
+
+
+
