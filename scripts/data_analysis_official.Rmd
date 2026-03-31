@@ -145,14 +145,17 @@ Scatterplot of log fit beetle richness and average leaf litter mass.
 
 ggplot(beetle_litter_joined_table, 
        aes(x = log(avg_mass_plotmonth), 
-           y = avg_richness_plotmonth,
-           color = siteID)) +
+           y = avg_richness_plotmonth)) +
   labs(x = "Ln Average Leaf Litter Mass per Month (g)",
        y = "Average Beetle Richness per Month") + 
-  geom_point(size = 1) +
+  geom_smooth(method = "lm", 
+              col = "black") +
+  geom_point(size = 1,
+             aes(col = siteID)) +
   theme_bw()
 
 ```
+Figure X. Scatterplot showing the significant relationship between the log of the average leaf litter mass per month and average beetle richness per month. Trendline shows line of best fit globally. (F(1, 137) = 5.801, p = 0.01735).
 
 Exploratory anova analysis data based on site. 
 ```{r graph by site}
