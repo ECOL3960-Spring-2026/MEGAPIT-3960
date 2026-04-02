@@ -212,9 +212,16 @@ beetle_abundance_agg <- beetle_abundance_taxonID %>%
   group_by(siteID, yearCollected, monthCollected) %>%
   summarize(avg_agg_abundance_monthly = mean(agg_abundance))
 ```
+Joining beetle abundance per month with litter mass per month.
+```{r}
+beetle_abundance_litter_joined <- beetle_litter_joined_table %>%
+  full_join(beetle_abundance_agg)
+```
+
+
 Linear model for abundance per month table, with log of litter mass which makes it more normal, although still not normal. 
 ```{r}
-model_beetle_litter_abundance <- lm(avg_agg_abundance_monthly ~ log(avg_mass_plotmonth), data = total_beetle_litter_joined_table)
+model_beetle_litter_abundance <- lm(avg_agg_abundance_monthly ~ log(avg_mass_plotmonth), data = beetle_abundance_litter_joined)
 
 ```
 
@@ -226,6 +233,22 @@ plot(model_beetle_litter_abundance, which = 1:3)
 
 shapiro.test(model_beetle_litter_abundance$residuals)
 
+```
+
+Scatterplot of log fit beetle richness and average leaf litter mass. 
+```{r make a graph}
+
+ggplot(beetle_abundance_litter_joined, 
+       aes(x = log(avg_mass_plotmonth), 
+           y = avg_agg_abundance_monthly)) +
+  labs(x = "Ln Average Leaf Litter Mass per Month (g)",
+       y = "Aggergate Beetle Abundance per Month") + 
+  geom_smooth(method = "lm", 
+              col = "black") +
+  geom_point(size = 1,
+             aes(col = siteID)) +
+  labs(col = "Site") +
+  theme_bw()
 ```
 
 Export joined beetle richness and average leaf litter data. 
