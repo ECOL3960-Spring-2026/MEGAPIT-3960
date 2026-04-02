@@ -71,6 +71,25 @@ litter_mass_by_site_month <- litter_averages_total %>%
   summarize(avg_mass_plotmonth = mean(avgmass), 
             avg_C_plotmonth = mean(avgCpercent),
             avg_N_plotmonth = mean(avgNpercent))
+
+beetle_abundance_agg <- beetle_abundance_taxonID %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, collectDate) %>%
+  summarize(agg_abundance = sum(count)) %>%
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_agg_abundance_monthly = mean(agg_abundance))
+
+
+beetle_DI <- beetle_abundance_taxonID %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, collectDate) %>%
+  summarize(simpsonsD = sum((count/(sum(count)))^2)^(-1), shannonH = -sum((count/sum(count))*log(count/sum(count)))) %>%
+    mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_simpsonsD_monthly = mean(simpsonsD), avg_shannonH = mean(shannonH)) 
   
 ```
 
@@ -83,6 +102,11 @@ beetle_litter_joined_table <- beetle_richness_by_site_month %>%
   drop_na("avg_richness_plotmonth","avg_mass_plotmonth") %>%
   select(siteID, yearCollected, monthCollected, avg_richness_plotmonth, avg_mass_plotmonth)
 
+
+
+total_beetle_litter_joined_table <- beetle_litter_joined_table %>%
+  full_join(beetle_abundance_agg) %>%
+  full_join(beetle_DI)
 ```
 
 Linear Model for beetle richness as a function of average leaf litter mass.
@@ -126,6 +150,8 @@ SCBI_lm <- lm(avg_richness_plotmonth ~ log(avg_mass_plotmonth), data= SCBI_BL)
 summary(SCBI_lm)
 
 beetle_litter_lm_lin2 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth) * siteID, data= beetle_litter_joined_table) 
+
+model_beetle_litter_abundance <- lm(avg_agg_abundance_monthly, avg_mass)
 
 summary(beetle_litter_lm)
 summary(beetle_litter_lm_lin2)
