@@ -201,6 +201,32 @@ tukey_beetle_litter <- contrast(em_beetle_model, method = "pairwise", adjust = "
 summary(tukey_beetle_litter, infer = TRUE, level = 0.95)
 
 ```
+Adding aggregate abundance per month variable to joined table. 
+```{r}
+beetle_abundance_agg <- beetle_abundance_taxonID %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, collectDate) %>%
+  summarize(agg_abundance = sum(count)) %>%
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_agg_abundance_monthly = mean(agg_abundance))
+```
+Linear model for abundance per month table, with log of litter mass which makes it more normal, although still not normal. 
+```{r}
+model_beetle_litter_abundance <- lm(avg_agg_abundance_monthly ~ log(avg_mass_plotmonth), data = total_beetle_litter_joined_table)
+
+```
+
+Checking assumption for abundance linear model.
+```{r}
+par(mfrow = c(1, 3))
+
+plot(model_beetle_litter_abundance, which = 1:3)
+
+shapiro.test(model_beetle_litter_abundance$residuals)
+
+```
 
 Export joined beetle richness and average leaf litter data. 
 ```{r send it out}
