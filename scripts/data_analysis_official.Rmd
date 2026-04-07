@@ -329,6 +329,64 @@ litter mass per month and aggregate beetle abundance per month.
 
 Export joined beetle richness and average leaf litter data.
 
+Create aggregate beetle abundance
+```{r}
+
+beetle_abundance_agg <- beetle_abundance_taxonID %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, collectDate) %>%
+  summarize(agg_abundance = sum(count)) %>%
+  mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_agg_abundance_monthly = mean(agg_abundance))
+
+```
+
+Create beetle diversity index
+```{r}
+
+beetle_DI <- beetle_abundance_taxonID %>%
+  mutate(siteID = substring(plotID, 0, 4)) %>%
+  group_by(siteID, collectDate) %>%
+  summarize(simpsonsD = sum((count/(sum(count)))^2)^(-1), shannonH = -sum((count/sum(count))*log(count/sum(count)))) %>%
+    mutate(monthCollected = month(collectDate), 
+         yearCollected = year(collectDate)) %>%
+  group_by(siteID, yearCollected, monthCollected) %>%
+  summarize(avg_simpsonsD_monthly = mean(simpsonsD), avg_shannonH = mean(shannonH)) 
+
+```
+
+Joining created beetle diversity index and aggregate beetle abundance.
+```{r}
+
+total_beetle_litter_joined_table <- beetle_litter_joined_table %>%
+  inner_join(beetle_abundance_agg) %>%
+  inner_join(beetle_DI)
+```
+
+Make linear model for created beetle diversity index and aggregate beetle abundance.
+```{r}
+modelsimpsons <- lm(data = total_beetle_litter_joined_table, avg_simpsonsD_monthly ~ log(avg_mass_plotmonth))
+
+summary(modelsimpsons)
+```
+
+Visual for joined beetle diversity index and aggregate beetle abundance
+``` {r}
+
+ggplot(total_beetle_litter_joined_table, 
+       aes(x = log(avg_mass_plotmonth), 
+           y = avg_simpsonsD_monthly)) +
+  labs(x = "Average Leaf Litter Mass per Month (g)",
+       y = "Beetle Simpsons Index") + 
+  geom_point(size = 1) +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+```
+Figure 3. Scatterplot visualizing the log of the average leaf litter mass per month (g) v simpson index of the beetle population. 
+
 ```{r send it out}
 
 beetle_litter_joined_table %>%
