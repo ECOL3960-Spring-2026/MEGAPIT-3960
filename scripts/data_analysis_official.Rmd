@@ -219,6 +219,8 @@ plot(beetle_litter_aov, which = 1:3)
 
 **DO NOT NEED FOR POSTER** Visual of anova model produced.
 
+Visual of anova model produced. NOT INCLUDING IN RESULTS JUST FOR US. 
+
 ```{r}
 
 # Not sure why this plot is using the fitted model as the data source?
