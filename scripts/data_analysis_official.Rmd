@@ -140,7 +140,7 @@ than 0.05 **(F(1, 137) = 0.9278, p = 0.337)**.
 **DO NOT INCLUDE IN POSTER** Scatterplot of beetle richness and average
 leaf litter mass.
 
-```{r make a graph}
+```{r graph mass plotmonth and avg richness}
 
 ggplot(beetle_litter_joined_table, 
        aes(x = avg_mass_plotmonth, 
@@ -182,7 +182,7 @@ shapiro.test(beetle_litter_lm_lin1$residuals)
 
 Scatterplot of log fit beetle richness and average leaf litter mass.
 
-```{r make a graph}
+```{r make a scatterplot of log fit beetle richness and avg leaf litter mass}
 
 ggplot(beetle_litter_joined_table, 
        aes(x = log(avg_mass_plotmonth), 
@@ -203,6 +203,8 @@ richness per month. Trendline shows line of best fit globally. (F(1,
 137) = 5.801, p = 0.01735). \*\*\* Exploratory anova analysis data based
 on site.
 
+------------------------------------------------------------------------
+**DO NOT NEED FOR POSTER** 
 ```{r graph by site}
 
 # aov() should be for factor/categorical predictors: testing whether means different among groups
@@ -215,9 +217,9 @@ plot(beetle_litter_aov, which = 1:3)
 
 ```
 
-------------------------------------------------------------------------
 
-**DO NOT NEED FOR POSTER** Visual of anova model produced.
+
+Visual of anova model produced.
 
 Visual of anova model produced. NOT INCLUDING IN RESULTS JUST FOR US. 
 
@@ -304,7 +306,7 @@ shapiro.test(model_beetle_litter_abundance$residuals)
 
 Scatterplot of log fit beetle richness and average leaf litter mass.
 
-```{r make a graph}
+```{r make a graph of log fit beetle richness and avg leaf litter mass}
 
 ggplot(beetle_abundance_litter_joined, 
        aes(x = log(avg_mass_plotmonth), 
