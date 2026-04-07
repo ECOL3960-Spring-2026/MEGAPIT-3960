@@ -107,6 +107,9 @@ beetle_litter_joined_table <- beetle_richness_by_site_month %>%
 total_beetle_litter_joined_table <- beetle_litter_joined_table %>%
   inner_join(beetle_abundance_agg) %>%
   inner_join(beetle_DI)
+
+total_beetle_litter_joined_table_2 <- total_beetle_litter_joined_table %>%
+  mutate()
 ```
 
 Linear Model for beetle richness as a function of average leaf litter mass.
@@ -123,6 +126,8 @@ BART_BL <- beetle_litter_joined_table  %>%
   filter(siteID == "BART")
 BART_lm <- lm(avg_richness_plotmonth ~ log(avg_mass_plotmonth), data= BART_BL)
 summary(BART_lm)
+
+plot(BART_BL, which = 2)
 
 GRSM_BL <- beetle_litter_joined_table  %>% 
   filter(siteID == "GRSM")
@@ -149,7 +154,7 @@ SCBI_BL <- beetle_litter_joined_table  %>%
 SCBI_lm <- lm(avg_richness_plotmonth ~ log(avg_mass_plotmonth), data= SCBI_BL)
 summary(SCBI_lm)
 
-beetle_litter_lm_lin2 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth) * siteID, data= beetle_litter_joined_table) 
+beetle_litter_lm_lin2 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth) + monthCollected, data= beetle_litter_joined_table) 
 
 model_beetle_litter_abundance <- lm(avg_agg_abundance_monthly ~ avg_mass_plotmonth, data = total_beetle_litter_joined_table)
 
@@ -171,6 +176,8 @@ plot(beetle_litter_lm_lin1, which = 1:3)
 
 plot(model_beetle_litter_abundance, which = 1:3)
 plot(model_beetle_litter_abundance_log, which = 1:3)
+shapiro.test(model_beetle_litter_abundance_log$residuals)
+
 
 shapiro.test(beetle_litter_lm_lin1$residuals)
 shapiro.test(beetle_litter_lm$residuals)
@@ -185,23 +192,22 @@ Average leaf litter mass per month was not a significant predictor of average be
 Scatterplot of beetle richness and average leaf litter mass. 
 ```{r make a graph}
 
-ggplot(beetle_litter_joined_table, 
-       aes(x = avg_mass_plotmonth, 
-           y = avg_richness_plotmonth,
-           color = siteID)) +
+ggplot(total_beetle_litter_joined_table, 
+       aes(x = avg_agg_abundance_monthly, 
+           y = avg_richness_plotmonth)) +
   labs(x = "Average Leaf Litter Mass per Month (g)",
        y = "Average Beetle Richness per Month") + 
+  geom_smooth(method = "lm") +
   geom_point(size = 1) +
   theme_bw()
 
 ggplot(total_beetle_litter_joined_table, 
-       aes(x = log(avg_mass_plotmonth), 
-           y = avg_agg_abundance_monthly,
-           color = siteID)) +
+       aes(x = avg_mass_plotmonth, 
+           y = avg_shannonH)) +
   labs(x = "Average Leaf Litter Mass per Month (g)",
        y = "Average Beetle Richness per Month") + 
   geom_point(size = 1) +
-  geom_smooth(method - "lm") +
+  geom_smooth(method = "lm") +
   theme_bw()
 
 ```
