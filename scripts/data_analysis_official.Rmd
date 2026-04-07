@@ -385,7 +385,7 @@ ggplot(total_beetle_litter_joined_table,
   theme_bw()
 
 ```
-**Figure 3.** Scatterplot visualizing the log of the average leaf litter mass per month (g) v simpson index of the beetle population. 
+**Figure 3.** Scatterplot visualizing the log of the average leaf litter mass per month (g) v simpson index of the beetle population. **INCLUDE SUMMARY STATS**
 
 ```{r send it out}
 
