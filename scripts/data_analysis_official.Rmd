@@ -185,14 +185,15 @@ Scatterplot of log fit beetle richness and average leaf litter mass.
 ```{r make a scatterplot of log fit beetle richness and avg leaf litter mass}
 
 ggplot(beetle_litter_joined_table, 
-       aes(x = log(avg_mass_plotmonth), 
+       aes(x = avg_mass_plotmonth, 
            y = avg_richness_plotmonth)) +
-  labs(x = "Ln Average Leaf Litter Mass per Month (g)",
-       y = "Average Beetle Richness per Month") + 
+  labs(x = "Average Leaf Litter Mass (g)",
+       y = "Average Beetle Richness") + 
   geom_smooth(method = "lm", 
               col = "black") +
   geom_point(size = 1,
              aes(col = siteID)) +
+  scale_x_log10(guide = "axis_logticks") +
   theme_bw()
 
 ```
@@ -309,14 +310,15 @@ Scatterplot of log fit beetle richness and average leaf litter mass.
 ```{r make a graph of log fit beetle richness and avg leaf litter mass}
 
 ggplot(beetle_abundance_litter_joined, 
-       aes(x = log(avg_mass_plotmonth), 
+       aes(x = avg_mass_plotmonth, 
            y = avg_agg_abundance_monthly)) +
-  labs(x = "Ln Average Leaf Litter Mass per Month (g)",
-       y = "Aggergate Beetle Abundance per Month") + 
+  labs(x = "Average Leaf Litter Mass (g)",
+       y = "Aggregate Beetle Abundance") + 
   geom_smooth(method = "lm", 
               col = "black") +
   geom_point(size = 1,
              aes(col = siteID)) +
+  scale_x_log10(guide = "axis_logticks") +
   labs(col = "Site") +
   theme_bw()
 ```
@@ -349,7 +351,7 @@ Create beetle diversity index
 beetle_DI <- beetle_abundance_taxonID %>%
   mutate(siteID = substring(plotID, 0, 4)) %>%
   group_by(siteID, collectDate) %>%
-  summarize(simpsonsD = sum((count/(sum(count)))^2)^(-1), shannonH = -sum((count/sum(count))*log(count/sum(count)))) %>%
+  summarize(simpsonsD = (sum((count/(sum(count)))^2))^(-1), shannonH = -sum((count/sum(count))*log(count/sum(count)))) %>%
     mutate(monthCollected = month(collectDate), 
          yearCollected = year(collectDate)) %>%
   group_by(siteID, yearCollected, monthCollected) %>%
@@ -376,17 +378,19 @@ Visual for joined beetle diversity index and aggregate beetle abundance
 ``` {r}
 
 ggplot(total_beetle_litter_joined_table, 
-       aes(x = log(avg_mass_plotmonth), 
+       aes(x = avg_mass_plotmonth, 
            y = avg_simpsonsD_monthly)) +
-  labs(x = "Average Leaf Litter Mass per Month (g)",
-       y = "Beetle Simpsons Index") + 
+  labs(x = "Average Leaf Litter Mass (g)",
+       y = "Inverse Simpson Index (1/λ)") + 
   geom_point(size = 1,
              aes(col = siteID)) +
   geom_smooth(method = "lm", col = "black") +
+    scale_x_log10(guide = "axis_logticks") +
   theme_bw()
 
 ```
 Figure 3. Scatterplot visualizing the log of the average leaf litter mass per month (g) v simpson index of the beetle population. (F(1, 137) = 4.171, p = 0.04305).
+
 
 ```{r send it out}
 
