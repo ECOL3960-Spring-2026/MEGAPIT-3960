@@ -303,6 +303,8 @@ plot(model_beetle_litter_abundance, which = 1:3)
 
 shapiro.test(model_beetle_litter_abundance$residuals)
 
+summary(model_beetle_litter_abundance)
+
 ```
 
 Scatterplot of log fit beetle richness and average leaf litter mass.
