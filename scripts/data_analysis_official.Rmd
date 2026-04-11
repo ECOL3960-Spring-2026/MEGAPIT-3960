@@ -194,6 +194,7 @@ ggplot(beetle_litter_joined_table,
   geom_point(size = 1,
              aes(col = siteID)) +
   scale_x_log10(guide = "axis_logticks") +
+  labs(col = "Site") +
   theme_bw()
 
 ```
@@ -388,6 +389,7 @@ ggplot(total_beetle_litter_joined_table,
              aes(col = siteID)) +
   geom_smooth(method = "lm", col = "black") +
     scale_x_log10(guide = "axis_logticks") +
+  labs(col = "Site") +
   theme_bw()
 
 ```
