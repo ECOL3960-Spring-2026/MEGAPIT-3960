@@ -5,10 +5,11 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(here)
 library(maps)
 
 ## Read in metadata for all NEON sites
-sites_all <- read_csv('data/NEON_Field_Site_Metadata_20210226_0.csv') %>% 
+sites_all <- read_csv(here("data", "NEON_Field_Site_Metadata_20210226_0.csv")) %>% 
   select(domainID:colocated_site, latitude:longitude, state:country)
 
 ## Define the list of your project's sites
