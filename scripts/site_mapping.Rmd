@@ -1,0 +1,53 @@
+---
+title: "Map our study sites"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(maps)
+
+## Read in metadata for all NEON sites
+sites_all <- read_csv('data/NEON_Field_Site_Metadata_20210226_0.csv') %>% 
+  select(domainID:colocated_site, latitude:longitude, state:country)
+
+## Define the list of your project's sites
+mySites <- c('BART','GRSM','HARV','MLBS','ORNL','SCBI')
+
+## Subset "sites" object for your project sites
+sites <- sites_all %>% 
+  filter(siteID %in% mySites) %>% arrange(siteID)
+
+# Set Appalachian states
+us_states <- map_data("state")
+
+app_states <- c(
+  "west virginia", "pennsylvania", "kentucky", "tennessee", 
+  "virginia", "north carolina", "ohio", "maryland", 
+  "new york", "south carolina", "georgia", "alabama", "mississippi",
+  "maine", "new hampshire", "vermont", "massachusetts", "rhode island", "connecticut"
+)
+
+app_map_data <- us_states %>%
+  filter(region %in% app_states)
+
+```
+
+## Make the map! 
+```{r}
+ggplot() +
+  geom_polygon(data = app_map_data, aes(long, lat, group = group),
+               fill = "white", color = "black") +
+  geom_point(data = sites, aes(longitude, latitude),
+             color = "tomato", size = 3) +
+  coord_map() +
+  geom_text(
+    data = sites,
+    aes(x = longitude, y = latitude, label = siteID),
+    size = 5,
+    hjust = c(1, 0, 1, 1, 1, 1),
+    vjust = 1,
+    fontface = "bold") +
+  theme_void() 
+```
+
