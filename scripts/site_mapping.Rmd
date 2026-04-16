@@ -26,7 +26,7 @@ app_states <- c(
   "west virginia", "pennsylvania", "kentucky", "tennessee", 
   "virginia", "north carolina", "ohio", "maryland", 
   "new york", "south carolina", "georgia", "alabama", "mississippi",
-  "maine", "new hampshire", "vermont", "massachusetts", "rhode island", "connecticut"
+  "maine", "new hampshire", "vermont", "massachusetts", "rhode island", "connecticut", "new jersey", "delaware"
 )
 
 app_map_data <- us_states %>%
@@ -38,9 +38,9 @@ app_map_data <- us_states %>%
 ```{r}
 ggplot() +
   geom_polygon(data = app_map_data, aes(long, lat, group = group),
-               fill = "white", color = "black") +
+               fill = "white", color = "gray70") +
   geom_point(data = sites, aes(longitude, latitude),
-             color = "tomato", size = 3) +
+             color = "forestgreen", size = 3) +
   coord_map() +
   geom_text(
     data = sites,
