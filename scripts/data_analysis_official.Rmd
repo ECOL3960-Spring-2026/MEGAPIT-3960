@@ -161,7 +161,7 @@ log fit on the beetle and litter data linear model.
 
 ```{r}
 
-beetle_litter_lm_lin1 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth), data= beetle_litter_joined_table) 
+beetle_litter_lm_lin1 <- lm((avg_richness_plotmonth) ~ log(avg_mass_plotmonth), data = beetle_litter_joined_table) 
 
 summary(beetle_litter_lm_lin1)
 
@@ -201,11 +201,11 @@ ggplot(beetle_litter_joined_table,
 **Figure 1.** Scatterplot showing the significant relationship between
 the log of the average leaf litter mass per month and average beetle
 richness per month. Trendline shows line of best fit globally. (F(1,
-137) = 5.801, p = 0.01735). \*\*\* Exploratory anova analysis data based
-on site.
+137) = 5.801, p = 0.01735). 
 
 ------------------------------------------------------------------------
 **DO NOT NEED FOR POSTER** 
+\*\*\* Exploratory anova analysis data based on site.
 ```{r graph by site}
 
 # aov() should be for factor/categorical predictors: testing whether means different among groups
