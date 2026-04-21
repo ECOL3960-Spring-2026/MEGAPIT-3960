@@ -193,6 +193,7 @@ ggplot(beetle_litter_joined_table,
               col = "darkseagreen4") +
   geom_point(size = 1) +
   scale_x_log10(guide = "axis_logticks") +
+  scale_y_continuous(breaks=seq(1,6,1), limits=c(1, 6)) +
 #  labs(col = "Site") +
   theme_bw()
 
@@ -320,6 +321,7 @@ ggplot(beetle_abundance_litter_joined,
               col = "darkseagreen4") +
   geom_point(size = 1) +
   scale_x_log10(guide = "axis_logticks") +
+  scale_y_continuous(breaks=seq(0,160,25), limits=c(0, 160)) +
   theme_bw()
 ```
 
@@ -385,7 +387,8 @@ ggplot(total_beetle_litter_joined_table,
   geom_point(size = 1)+
   geom_smooth(method = "lm", 
               col = "darkseagreen4") +
-    scale_x_log10(guide = "axis_logticks") +
+  scale_x_log10(guide = "axis_logticks") +
+  scale_y_continuous(breaks=seq(0,40,10), limits=c(0, 40)) +
   theme_bw()
 
 ```
